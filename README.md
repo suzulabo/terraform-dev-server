@@ -77,4 +77,4 @@ npm run tf:ssh
 
 ## Next steps
 
-The VM uses Ubuntu 22.04 LTS by default. You can supply a bootstrap script (for example, to install VS Code Dev Server) by setting the `startup_script` variable in `terraform.tfvars`. Keep ports locked down to your IP whenever you expose dev tooling.
+The VM uses Ubuntu 22.04 LTS by default. A 2 GB swapfile and `vm.swappiness=10` are provisioned automatically on first boot. You can append your own bootstrap commands (for example, to install VS Code Dev Server) by setting the `startup_script` variable in `terraform.tfvars`—your script runs after the swap configuration. Keep ports locked down to your IP whenever you expose dev tooling.

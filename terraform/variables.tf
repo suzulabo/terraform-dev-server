@@ -52,7 +52,7 @@ variable "allowed_source_ranges" {
 }
 
 variable "startup_script" {
-  description = "Optional startup script to configure the VM (leave empty to skip)."
+  description = "Optional script appended after the default swap setup; leave empty to accept only the built-in configuration."
   type        = string
   default     = ""
 }

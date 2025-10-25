@@ -15,6 +15,37 @@ provider "google" {
   zone    = var.zone
 }
 
+locals {
+  base_startup_script = <<-EOT
+    #!/usr/bin/env bash
+    set -euxo pipefail
+
+    if [ ! -f /swapfile ]; then
+      fallocate -l 2G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=2048
+      chmod 600 /swapfile
+      mkswap /swapfile
+    fi
+
+    if ! swapon --show=NAME --noheadings | grep -q '^/swapfile$'; then
+      swapon /swapfile
+    fi
+
+    if ! grep -q '^/swapfile ' /etc/fstab; then
+      echo '/swapfile none swap sw 0 0' >> /etc/fstab
+    fi
+
+    cat <<'SYSCTL' >/etc/sysctl.d/99-dev-server.conf
+    vm.swappiness = 10
+    SYSCTL
+
+    sysctl -p /etc/sysctl.d/99-dev-server.conf
+  EOT
+
+  user_startup_script = trimspace(var.startup_script)
+
+  combined_startup_script = trimspace(local.user_startup_script == "" ? local.base_startup_script : "${local.base_startup_script}\n\n${local.user_startup_script}")
+}
+
 resource "google_project_service" "compute" {
   project = var.project_id
   service = "compute.googleapis.com"
@@ -52,7 +83,7 @@ resource "google_compute_instance" "dev_server" {
     enable-oslogin = "TRUE"
   }
 
-  metadata_startup_script = trimspace(var.startup_script) == "" ? null : var.startup_script
+  metadata_startup_script = local.combined_startup_script == "" ? null : local.combined_startup_script
 
   scheduling {
     preemptible       = false
