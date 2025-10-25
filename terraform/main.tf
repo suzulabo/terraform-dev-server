@@ -68,7 +68,7 @@ resource "google_compute_firewall" "dev_server_ports" {
     google_project_service.compute,
   ]
 
-  allows {
+  allow {
     protocol = "tcp"
     ports    = var.allowed_ports
   }
