@@ -86,3 +86,13 @@ output "instance_zone" {
   description = "Zone where the instance was created."
   value       = google_compute_instance.dev_server.zone
 }
+
+output "instance_name" {
+  description = "Name of the development VM."
+  value       = google_compute_instance.dev_server.name
+}
+
+output "project_id" {
+  description = "Project that owns the resources."
+  value       = var.project_id
+}

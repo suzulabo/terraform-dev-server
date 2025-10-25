@@ -65,6 +65,16 @@ docker compose run --rm terraform destroy
 
 Terraform state files are stored inside `./terraform`, so they stay on your machine.
 
+## SSH into the VM
+
+After `terraform apply` succeeds, reuse the recorded outputs to open an interactive shell:
+
+```bash
+npm run tf:ssh
+```
+
+(Replace `npm` with your preferred package manager command, e.g. `pnpm`.) The helper script looks up the project, zone, and instance name from Terraform state, then launches `gcloud compute ssh` inside the Docker container.
+
 ## Next steps
 
 The VM uses Ubuntu 22.04 LTS by default. You can supply a bootstrap script (for example, to install VS Code Dev Server) by setting the `startup_script` variable in `terraform.tfvars`. Keep ports locked down to your IP whenever you expose dev tooling.
