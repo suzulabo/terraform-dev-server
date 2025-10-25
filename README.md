@@ -78,6 +78,19 @@ npm run tf:ssh
 (Replace `npm` with your preferred package manager command, e.g. `pnpm`.) The helper script looks up the project, zone, and instance name from Terraform state, then launches `gcloud compute ssh` inside the Docker container.
 SSH keys are cached inside `./gcloud-ssh`, so you will not be prompted to regenerate them on each run.
 
+## Start/stop the VM
+
+Use the cached Terraform outputs to control power state without retyping identifiers:
+
+```bash
+npm run tf:stop     # stop the instance (shuts down)
+npm run tf:start    # start after a full stop
+npm run tf:suspend  # suspend to disk (beta feature, billed for storage only)
+npm run tf:resume   # resume a suspended instance
+```
+
+Each command runs the appropriate `gcloud compute instances` action inside the Docker container with `--quiet` to avoid confirmation prompts.
+
 ## Next steps
 
 The VM uses Ubuntu 22.04 LTS by default. A 2 GB swapfile and `vm.swappiness=10` are provisioned automatically on first boot. You can append your own bootstrap commands (for example, to install VS Code Dev Server) by setting the `startup_script` variable in `terraform.tfvars`—your script runs after the swap configuration. Keep ports locked down to your IP whenever you expose dev tooling.
