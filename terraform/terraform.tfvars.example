@@ -1,0 +1,6 @@
+project_id = "suzulabo-playground"
+# region  = "us-west1"
+# zone    = "us-west1-b"
+# instance_name = "dev-vscode"
+# machine_type  = "e2-micro"
+# allowed_source_ranges = ["X.X.X.X/32"] # replace with your public IP for tighter security
