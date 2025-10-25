@@ -17,6 +17,7 @@ services:
     volumes:
       - ./:/workspace
       - ./gcp-auth:/root/.config/gcloud
+      - ./gcloud-ssh:/root/.ssh
 
 volumes:
   terraform-plugin-cache:

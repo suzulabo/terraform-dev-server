@@ -2,6 +2,7 @@ node_modules
 
 # Local GCP authentication material (mounted into Docker containers)
 gcp-auth/
+gcloud-ssh/
 
 # Terraform working files
 terraform/.terraform/

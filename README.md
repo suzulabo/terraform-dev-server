@@ -12,13 +12,15 @@ Terraform configuration that provisions a minimal Google Compute Engine VM (Alwa
 ```
 ./terraform          # Terraform configuration
 ./gcp-auth           # (created locally) persisted gcloud credentials
+./gcloud-ssh         # (created locally) persisted SSH key material
 docker-compose.yml   # Helper services for terraform & gcloud CLIs
 ```
 
 Create the credentials folder once (kept out of git via `.gitignore`):
 
 ```bash
-mkdir -p gcp-auth
+mkdir -p gcp-auth gcloud-ssh
+chmod 700 gcloud-ssh
 ```
 
 ## Authenticate with GCP (persisted locally)
@@ -74,6 +76,7 @@ npm run tf:ssh
 ```
 
 (Replace `npm` with your preferred package manager command, e.g. `pnpm`.) The helper script looks up the project, zone, and instance name from Terraform state, then launches `gcloud compute ssh` inside the Docker container.
+SSH keys are cached inside `./gcloud-ssh`, so you will not be prompted to regenerate them on each run.
 
 ## Next steps
 
