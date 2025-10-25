@@ -1,0 +1,24 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    devDependencies:
+      '@openai/codex':
+        specifier: ^0.49.0
+        version: 0.49.0
+
+packages:
+
+  '@openai/codex@0.49.0':
+    resolution: {integrity: sha512-L1sskU5Z0sI3qBFRkBYARt7GXgvBDmpAlcDGlc3bwHQ9qwLKnu8FYbK2DLSHQcE0TqtK9esT2OQiJcBiSgriLg==}
+    engines: {node: '>=16'}
+    hasBin: true
+
+snapshots:
+
+  '@openai/codex@0.49.0': {}
