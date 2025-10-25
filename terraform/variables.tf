@@ -6,13 +6,13 @@ variable "project_id" {
 variable "region" {
   description = "Default region for regional resources."
   type        = string
-  default     = "us-west1"
+  default     = "asia-northeast1"
 }
 
 variable "zone" {
   description = "Zone where the VM instance will run."
   type        = string
-  default     = "us-west1-b"
+  default     = "asia-northeast1-c"
 }
 
 variable "instance_name" {
@@ -22,21 +22,21 @@ variable "instance_name" {
 }
 
 variable "machine_type" {
-  description = "GCE machine type. e2-micro is covered by the Always Free tier in eligible regions."
+  description = "GCE machine type for the development VM."
   type        = string
-  default     = "e2-micro"
+  default     = "c4a-standard-1"
 }
 
 variable "boot_disk_size_gb" {
   description = "Size of the boot disk in GB."
   type        = number
-  default     = 30
+  default     = 10
 }
 
 variable "boot_image" {
   description = "Source image used to initialize the boot disk."
   type        = string
-  default     = "projects/ubuntu-os-cloud/global/images/family/ubuntu-2204-lts"
+  default     = "projects/ubuntu-os-cloud/global/images/family/ubuntu-2204-lts-arm64"
 }
 
 variable "allowed_ports" {

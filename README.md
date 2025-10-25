@@ -1,6 +1,6 @@
 # terraform-dev-server
 
-Terraform configuration that provisions a minimal Google Compute Engine VM (Always Free tier compatible) to host a VS Code Dev Server prototype.
+Terraform configuration that provisions a Google Compute Engine VM (defaulting to a `c4a-standard-1` Spot instance in `asia-northeast1`) to host a VS Code Dev Server prototype.
 
 ## Prerequisites
 
@@ -45,7 +45,7 @@ Copy and adjust the sample vars file:
 cp terraform/terraform.tfvars.example terraform/terraform.tfvars
 ```
 
-Set at least `project_id` if your project differs, and tighten `allowed_source_ranges` to your public IP (recommended before exposing dev servers).
+Set at least `project_id` if your project differs, and tighten `allowed_source_ranges` to your public IP (recommended before exposing dev servers). By default the configuration uses `asia-northeast1-c`, `c4a-standard-1`, the ARM64 Ubuntu 22.04 LTS image, a 10 GB Hyperdisk Balanced boot disk, and the Spot provisioning model; override these variables in `terraform.tfvars` if you prefer a different region, machine size, image, disk type/size, or need on-demand capacity.
 
 ## Run Terraform via Docker
 

@@ -67,7 +67,7 @@ resource "google_compute_instance" "dev_server" {
     initialize_params {
       image = var.boot_image
       size  = var.boot_disk_size_gb
-      type  = "pd-balanced"
+      type  = "hyperdisk-balanced"
     }
   }
 
@@ -86,8 +86,10 @@ resource "google_compute_instance" "dev_server" {
   metadata_startup_script = local.combined_startup_script == "" ? null : local.combined_startup_script
 
   scheduling {
-    preemptible       = false
-    automatic_restart = true
+    provisioning_model  = "SPOT"
+    preemptible         = true
+    automatic_restart   = false
+    on_host_maintenance = "TERMINATE"
   }
 }
 
