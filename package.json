@@ -1,8 +1,4 @@
 {
 	"scripts": {
-		"codex": "codex"
-	},
-  "devDependencies": {
-    "@openai/codex": "^0.49.0"
-  }
+	}
 }
