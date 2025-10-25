@@ -61,8 +61,8 @@ docker compose run --rm terraform plan
 # Create / update the VM
 docker compose run --rm terraform apply
 
-# Tear everything down when finished
-docker compose run --rm terraform destroy
+# Tear everything down when finished (keeps the persistent home disk)
+docker compose run --rm terraform destroy -target google_compute_instance.dev_server -target google_compute_firewall.dev_server_ports
 ```
 
 Terraform state files are stored inside `./terraform`, so they stay on your machine.
@@ -91,6 +91,21 @@ npm run tf:resume   # resume a suspended instance
 ```
 
 Each command runs the appropriate `gcloud compute instances` action inside the Docker container with `--quiet` to avoid confirmation prompts.
+
+## Persistent home volume
+
+A 10 GB Hyperdisk Balanced volume (`${instance_name}-home`) is created and attached to the VM. On first boot the startup script formats it, migrates the current `/home` contents, and mounts the disk directly at `/home` so all user profiles and dev data live on the persistent volume.
+
+When you run `npm run tf:destroy` (or the equivalent compose command shown above), Terraform only deletes the VM and firewall rule; the home volume remains intact. A `prevent_destroy = true` lifecycle guard on the disk also blocks accidental removal if you ever run a full `terraform destroy`. Reapply later and Terraform will reattach and reuse the same disk.
+
+To remove the disk permanently, delete it explicitly:
+
+```bash
+docker compose run --rm terraform destroy -target google_compute_disk.dev_home -auto-approve
+# or remove the lifecycle guard temporarily and run a full destroy
+# or
+docker compose run --rm gcloud "gcloud compute disks delete dev-vscode-home --zone asia-northeast1-c"
+```
 
 ## Next steps
 

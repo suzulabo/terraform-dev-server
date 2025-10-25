@@ -33,6 +33,12 @@ variable "boot_disk_size_gb" {
   default     = 10
 }
 
+variable "home_disk_size_gb" {
+  description = "Size of the persistent Hyperdisk Balanced volume mounted at /home."
+  type        = number
+  default     = 10
+}
+
 variable "boot_image" {
   description = "Source image used to initialize the boot disk."
   type        = string
