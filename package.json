@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "gcp:auth": "docker compose run --rm gcloud 'gcloud auth application-default login'",
+    "gcp:login": "docker compose run --rm gcloud 'gcloud auth login'",
+    "gcp:login-app": "docker compose run --rm gcloud 'gcloud auth application-default login'",
     "tf:init": "docker compose run --rm terraform init",
     "tf:plan": "docker compose run --rm terraform plan",
     "tf:apply": "docker compose run --rm terraform apply",
