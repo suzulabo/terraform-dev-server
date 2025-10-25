@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "scripts": {
     "gcp:login": "docker compose run --rm gcloud 'gcloud auth login'",
     "gcp:login-app": "docker compose run --rm gcloud 'gcloud auth application-default login'",
@@ -6,10 +7,10 @@
     "tf:plan": "docker compose run --rm terraform plan",
     "tf:apply": "docker compose run --rm terraform apply -auto-approve",
     "tf:destroy": "docker compose run --rm terraform destroy -auto-approve",
-    "tf:ssh": "ZONE=$(docker compose run --rm terraform output -raw instance_zone) && NAME=$(docker compose run --rm terraform output -raw instance_name) && PROJECT=$(docker compose run --rm terraform output -raw project_id) && docker compose run --rm gcloud \"gcloud compute ssh $NAME --project $PROJECT --zone $ZONE\"",
-    "tf:stop": "ZONE=$(docker compose run --rm terraform output -raw instance_zone) && NAME=$(docker compose run --rm terraform output -raw instance_name) && PROJECT=$(docker compose run --rm terraform output -raw project_id) && docker compose run --rm gcloud \"gcloud compute instances stop $NAME --project $PROJECT --zone $ZONE --quiet\"",
-    "tf:start": "ZONE=$(docker compose run --rm terraform output -raw instance_zone) && NAME=$(docker compose run --rm terraform output -raw instance_name) && PROJECT=$(docker compose run --rm terraform output -raw project_id) && docker compose run --rm gcloud \"gcloud compute instances start $NAME --project $PROJECT --zone $ZONE --quiet\"",
-    "tf:resume": "ZONE=$(docker compose run --rm terraform output -raw instance_zone) && NAME=$(docker compose run --rm terraform output -raw instance_name) && PROJECT=$(docker compose run --rm terraform output -raw project_id) && docker compose run --rm gcloud \"gcloud compute instances resume $NAME --project $PROJECT --zone $ZONE --quiet\"",
-    "tf:suspend": "ZONE=$(docker compose run --rm terraform output -raw instance_zone) && NAME=$(docker compose run --rm terraform output -raw instance_name) && PROJECT=$(docker compose run --rm terraform output -raw project_id) && docker compose run --rm gcloud \"gcloud compute instances suspend $NAME --project $PROJECT --zone $ZONE --quiet\""
+    "tf:ssh": "node scripts/run-instance-action.js ssh",
+    "tf:stop": "node scripts/run-instance-action.js stop",
+    "tf:start": "node scripts/run-instance-action.js start",
+    "tf:resume": "node scripts/run-instance-action.js resume",
+    "tf:suspend": "node scripts/run-instance-action.js suspend"
   }
 }

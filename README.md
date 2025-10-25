@@ -77,6 +77,7 @@ npm run tf:ssh
 
 (Replace `npm` with your preferred package manager command, e.g. `pnpm`.) The helper script looks up the project, zone, and instance name from Terraform state, then launches `gcloud compute ssh` inside the Docker container.
 SSH keys are cached inside `./gcloud-ssh`, so you will not be prompted to regenerate them on each run.
+Pass additional SSH flags by appending them after `--`, for example `npm run tf:ssh -- -- -L 8080:localhost:8080`.
 
 ## Start/stop the VM
 
