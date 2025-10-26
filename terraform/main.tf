@@ -15,73 +15,6 @@ provider "google" {
   zone    = var.zone
 }
 
-locals {
-  base_startup_script = <<-EOT
-    #!/usr/bin/env bash
-    set -euxo pipefail
-
-    if [ ! -f /swapfile ]; then
-      fallocate -l 2G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=2048
-      chmod 600 /swapfile
-      mkswap /swapfile
-    fi
-
-    if ! swapon --show=NAME --noheadings | grep -q '^/swapfile$'; then
-      swapon /swapfile
-    fi
-
-    if ! grep -q '^/swapfile ' /etc/fstab; then
-      echo '/swapfile none swap sw 0 0' >> /etc/fstab
-    fi
-
-    cat <<'SYSCTL' >/etc/sysctl.d/99-dev-server.conf
-    vm.swappiness = 10
-    SYSCTL
-
-    sysctl -p /etc/sysctl.d/99-dev-server.conf
-
-    DEVICE_PATH="/dev/disk/by-id/google-dev-home"
-    TEMP_MOUNT="/mnt/dev-home"
-    TARGET_MOUNT="/home"
-
-    for _ in $(seq 1 30); do
-      if [ -b "$DEVICE_PATH" ]; then
-        break
-      fi
-      sleep 1
-    done
-
-    if [ -b "$DEVICE_PATH" ]; then
-      FSTYPE=$(lsblk -no FSTYPE "$DEVICE_PATH" || true)
-      if [ -z "$FSTYPE" ]; then
-        mkfs.ext4 -F "$DEVICE_PATH"
-      fi
-
-      DISK_UUID=$(blkid -s UUID -o value "$DEVICE_PATH")
-
-      if ! grep -q "$DISK_UUID" /etc/fstab; then
-        mkdir -p "$TEMP_MOUNT"
-        mount "$DEVICE_PATH" "$TEMP_MOUNT"
-        rsync -a "${TARGET_MOUNT}/." "${TEMP_MOUNT}/."
-        umount "$TEMP_MOUNT"
-        printf 'UUID=%s %s ext4 defaults 0 2\n' "$DISK_UUID" "$TARGET_MOUNT" >> /etc/fstab
-      fi
-
-      if ! mountpoint -q "$TARGET_MOUNT"; then
-        mount "$TARGET_MOUNT"
-      fi
-
-      chmod 755 "$TARGET_MOUNT"
-    else
-      echo "Persistent disk ${DEVICE_PATH} not found; skipping home mount" >&2
-    fi
-  EOT
-
-  user_startup_script = trimspace(var.startup_script)
-
-  combined_startup_script = trimspace(local.user_startup_script == "" ? local.base_startup_script : "${local.base_startup_script}\n\n${local.user_startup_script}")
-}
-
 resource "google_project_service" "compute" {
   project = var.project_id
   service = "compute.googleapis.com"
@@ -89,11 +22,11 @@ resource "google_project_service" "compute" {
   disable_on_destroy = false
 }
 
-resource "google_compute_disk" "dev_home" {
-  name = "${var.instance_name}-home"
+resource "google_compute_disk" "persist_disk" {
+  name = "${var.persist_disk_name}"
   type = "hyperdisk-balanced"
   zone = var.zone
-  size = var.home_disk_size_gb
+  size = var.persist_disk_size_gb
 
   lifecycle {
     prevent_destroy = true
@@ -106,7 +39,7 @@ resource "google_compute_instance" "dev_server" {
 
   depends_on = [
     google_project_service.compute,
-    google_compute_disk.dev_home,
+    google_compute_disk.persist_disk,
   ]
 
   tags = ["dev-server"]
@@ -131,7 +64,31 @@ resource "google_compute_instance" "dev_server" {
     enable-oslogin = "TRUE"
   }
 
-  metadata_startup_script = local.combined_startup_script == "" ? null : local.combined_startup_script
+  metadata_startup_script = <<-EOT
+    #!/bin/bash
+    set -e
+    DISK_ID="/dev/disk/by-id/google-persist-disk"
+    MNT_DIR=/mnt/persist
+
+    # マウント準備
+    if ! grep -qs "$${DISK_ID}" /proc/mounts; then
+      mkfs.ext4 -F $${DISK_ID}
+      mkdir -p $${MNT_DIR}
+      mount $${DISK_ID} $${MNT_DIR}
+      echo "$${DISK_ID} $${MNT_DIR} ext4 defaults 0 2" >> /etc/fstab
+    fi
+
+    # swapを追加（開発用：2GB）
+    fallocate -l 2G /swapfile
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+    echo '/swapfile none swap sw 0 0' >> /etc/fstab
+
+    # swapの利用頻度を低くする
+    sysctl vm.swappiness=10
+    echo 'vm.swappiness=10' >> /etc/sysctl.conf
+  EOT
 
   scheduling {
     provisioning_model  = "SPOT"
@@ -141,8 +98,8 @@ resource "google_compute_instance" "dev_server" {
   }
 
   attached_disk {
-    source      = google_compute_disk.dev_home.id
-    device_name = "dev-home"
+    source      = google_compute_disk.persist_disk.id
+    device_name = "persist-disk"
     mode        = "READ_WRITE"
   }
 }

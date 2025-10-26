@@ -33,12 +33,6 @@ variable "boot_disk_size_gb" {
   default     = 10
 }
 
-variable "home_disk_size_gb" {
-  description = "Size of the persistent Hyperdisk Balanced volume mounted at /home."
-  type        = number
-  default     = 10
-}
-
 variable "boot_image" {
   description = "Source image used to initialize the boot disk."
   type        = string
@@ -57,8 +51,14 @@ variable "allowed_source_ranges" {
   default     = ["0.0.0.0/0"]
 }
 
-variable "startup_script" {
-  description = "Optional script appended after the default swap setup; leave empty to accept only the built-in configuration."
+variable "persist_disk_name" {
+  description = "Name of the persistent Hyperdisk Balanced volume."
   type        = string
-  default     = ""
+  default     = "dev-vscode-persist"
+}
+
+variable "persist_disk_size_gb" {
+  description = "Size of the persistent Hyperdisk Balanced volume."
+  type        = number
+  default     = 10
 }
