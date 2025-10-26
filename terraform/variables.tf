@@ -18,13 +18,13 @@ variable "zone" {
 variable "instance_name" {
   description = "Name assigned to the development VM."
   type        = string
-  default     = "dev-vscode"
+  default     = "dev-vscode-arm64"
 }
 
 variable "machine_type" {
   description = "GCE machine type for the development VM."
   type        = string
-  default     = "c4a-standard-1"
+  default     = "c4a-standard-4"
 }
 
 variable "boot_disk_size_gb" {
