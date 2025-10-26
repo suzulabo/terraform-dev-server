@@ -67,42 +67,78 @@ resource "google_compute_instance" "dev_server" {
 
   metadata_startup_script = <<-EOT
     #!/bin/bash
-    set -e
+    set -euo pipefail
 
-    # Mount persist disk
+    # ---------- Mount persist disk ----------
     DISK_ID="/dev/disk/by-id/google-persist-disk"
-    MNT_DIR=/mnt/persist
-    if ! grep -qs "$${DISK_ID}" /proc/mounts; then
-      mkfs.ext4 -F $${DISK_ID}
-      mkdir -p $${MNT_DIR}
-      mount $${DISK_ID} $${MNT_DIR}
-      echo "$${DISK_ID} $${MNT_DIR} ext4 defaults 0 2" >> /etc/fstab
+    MNT_DIR="/mnt/persist"
+
+    # Format persist disk
+    if ! blkid "$DISK_ID" >/dev/null 2>&1; then
+      echo "[INFO] Formatting new persist disk: $DISK_ID"
+      mkfs.ext4 -F "$DISK_ID"
+    else
+      echo "[INFO] Existing filesystem detected on $DISK_ID — skip format"
     fi
 
-    # Add swap
-    fallocate -l 2G /swapfile
-    chmod 600 /swapfile
-    mkswap /swapfile
-    swapon /swapfile
-    echo '/swapfile none swap sw 0 0' >> /etc/fstab
+    mkdir -p "$MNT_DIR"
 
-    # vm.swappiness
-    sysctl vm.swappiness=10
-    echo 'vm.swappiness=10' >> /etc/sysctl.conf
+    # Append persist disk to fstab
+    if ! grep -qs "$DISK_ID" /etc/fstab; then
+      echo "$DISK_ID $MNT_DIR ext4 defaults 0 2" >> /etc/fstab
+    fi
 
-    # Timezone
-    timedatectl set-timezone "Asia/Tokyo"
+    # Mount persist disk
+    if ! mountpoint -q "$MNT_DIR"; then
+      mount "$DISK_ID" "$MNT_DIR"
+    fi
 
-    # Install gh
-    (type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
-      && sudo mkdir -p -m 755 /etc/apt/keyrings \
-      && out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-      && cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
-      && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
-      && sudo mkdir -p -m 755 /etc/apt/sources.list.d \
-      && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-      && sudo apt update \
-      && sudo apt install gh -y
+    echo "[OK] persist disk mounted at $MNT_DIR"
+
+    # ---------- Add swap (2GB) ----------
+    if ! swapon --show | grep -q "/swapfile"; then
+      echo "[INFO] Creating swapfile"
+      fallocate -l 2G /swapfile
+      chmod 600 /swapfile
+      mkswap /swapfile
+      swapon /swapfile
+      if ! grep -qs '/swapfile' /etc/fstab; then
+        echo '/swapfile none swap sw 0 0' >> /etc/fstab
+      fi
+    else
+      echo "[INFO] Swapfile already active"
+    fi
+
+    # ---------- vm.swappiness ----------
+    if ! grep -qs 'vm.swappiness=10' /etc/sysctl.conf; then
+      echo "[INFO] Setting vm.swappiness=10"
+      sysctl vm.swappiness=10
+      echo 'vm.swappiness=10' >> /etc/sysctl.conf
+    fi
+
+    # ---------- Timezone ----------
+    if [ "$(timedatectl show -p Timezone --value)" != "Asia/Tokyo" ]; then
+      echo "[INFO] Setting timezone to Asia/Tokyo"
+      timedatectl set-timezone "Asia/Tokyo"
+    fi
+
+    # ---------- Install gh ----------
+    if ! command -v gh >/dev/null 2>&1; then
+      echo "[INFO] Installing GitHub CLI"
+      (type -p wget >/dev/null || (apt-get update && apt-get install wget -y)) \
+        && mkdir -p -m 755 /etc/apt/keyrings \
+        && out=$(mktemp) && wget -nv -O "$out" https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+        && cat "$out" | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg >/dev/null \
+        && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+        && mkdir -p -m 755 /etc/apt/sources.list.d \
+        && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list >/dev/null \
+        && apt-get update \
+        && apt-get install gh -y
+    else
+      echo "[INFO] GitHub CLI already installed"
+    fi
+
+    echo "[SUCCESS] Startup script completed"
   EOT
 
   scheduling {
