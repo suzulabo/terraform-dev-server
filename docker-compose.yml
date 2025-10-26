@@ -1,0 +1,23 @@
+services:
+  terraform:
+    image: hashicorp/terraform:1.6.6
+    working_dir: /workspace/terraform
+    entrypoint: ["terraform"]
+    volumes:
+      - ./terraform:/workspace/terraform
+      - ./gcp-auth:/root/.config/gcloud
+      - terraform-plugin-cache:/root/.terraform.d/plugin-cache
+    environment:
+      TF_PLUGIN_CACHE_DIR: /root/.terraform.d/plugin-cache
+
+  gcloud:
+    image: google/cloud-sdk:slim
+    working_dir: /workspace
+    entrypoint: ["/bin/bash", "-lc"]
+    volumes:
+      - ./:/workspace
+      - ./gcp-auth:/root/.config/gcloud
+      - ./gcloud-ssh:/root/.ssh
+
+volumes:
+  terraform-plugin-cache:
