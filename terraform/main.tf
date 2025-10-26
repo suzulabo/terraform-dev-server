@@ -146,6 +146,10 @@ resource "google_compute_instance" "dev_server" {
     preemptible         = true
     automatic_restart   = false
     on_host_maintenance = "TERMINATE"
+    instance_termination_action = "STOP"
+    max_run_duration {
+      seconds = 28800  # 8hours
+    }
   }
 
   attached_disk {
