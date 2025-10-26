@@ -89,6 +89,8 @@ resource "google_compute_instance" "dev_server" {
     # swapの利用頻度を低くする
     sysctl vm.swappiness=10
     echo 'vm.swappiness=10' >> /etc/sysctl.conf
+
+    timedatectl set-timezone "Asia/Tokyo"
   EOT
 
   scheduling {
