@@ -50,6 +50,7 @@ resource "google_compute_instance" "dev_server" {
       size  = var.boot_disk_size_gb
       type  = "hyperdisk-balanced"
     }
+    auto_delete = false
   }
 
   network_interface {
