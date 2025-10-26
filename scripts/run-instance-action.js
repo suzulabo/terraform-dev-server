@@ -62,6 +62,7 @@ function escapeShellArg(arg) {
 
 function runGcloud(composeArgs, gcloudArgs) {
   const commandString = gcloudArgs.map(escapeShellArg).join(" ");
+  console.log(commandString);
   const child = spawn("docker", [...composeArgs, commandString], { stdio: "inherit" });
   child.on("exit", (code, signal) => {
     if (typeof code === "number") {
