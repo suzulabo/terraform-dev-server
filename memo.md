@@ -50,3 +50,9 @@ vscode に貼り付けると`~/.ssh/config`に追加される
 - User の値を設定する
   - これを設定しないと`Permission denied (publickey).`というエラーになる
   - ローカルのユーザー名でログインしようとするため
+
+## Port forwarding
+
+```
+ssh -N -L 3000:localhost:3000 dev-vscode
+```
