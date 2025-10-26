@@ -68,10 +68,10 @@ resource "google_compute_instance" "dev_server" {
   metadata_startup_script = <<-EOT
     #!/bin/bash
     set -e
+
+    # Mount persist disk
     DISK_ID="/dev/disk/by-id/google-persist-disk"
     MNT_DIR=/mnt/persist
-
-    # マウント準備
     if ! grep -qs "$${DISK_ID}" /proc/mounts; then
       mkfs.ext4 -F $${DISK_ID}
       mkdir -p $${MNT_DIR}
@@ -79,18 +79,30 @@ resource "google_compute_instance" "dev_server" {
       echo "$${DISK_ID} $${MNT_DIR} ext4 defaults 0 2" >> /etc/fstab
     fi
 
-    # swapを追加（開発用：2GB）
+    # Add swap
     fallocate -l 2G /swapfile
     chmod 600 /swapfile
     mkswap /swapfile
     swapon /swapfile
     echo '/swapfile none swap sw 0 0' >> /etc/fstab
 
-    # swapの利用頻度を低くする
+    # vm.swappiness
     sysctl vm.swappiness=10
     echo 'vm.swappiness=10' >> /etc/sysctl.conf
 
+    # Timezone
     timedatectl set-timezone "Asia/Tokyo"
+
+    # Install gh
+    (type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
+      && sudo mkdir -p -m 755 /etc/apt/keyrings \
+      && out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+      && cat $out | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+      && sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+      && sudo mkdir -p -m 755 /etc/apt/sources.list.d \
+      && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+      && sudo apt update \
+      && sudo apt install gh -y
   EOT
 
   scheduling {
