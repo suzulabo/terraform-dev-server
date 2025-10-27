@@ -54,5 +54,5 @@ vscode に貼り付けると`~/.ssh/config`に追加される
 ## Port forwarding
 
 ```
-ssh -N -L 3000:localhost:3000 dev-vscode
+ssh -N -L 3000:localhost:3000 -R 8888:localhost:8888 dev-vscode
 ```
