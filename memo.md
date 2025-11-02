@@ -56,3 +56,7 @@ vscode に貼り付けると`~/.ssh/config`に追加される
 ```
 ssh -N -L 3000:localhost:3000 -R 8888:localhost:8888 dev-vscode
 ```
+
+## Portainer
+
+https://docs.portainer.io/start/install-ce/server/docker/linux
