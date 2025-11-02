@@ -138,12 +138,6 @@ resource "google_compute_instance" "dev_server" {
       echo "[INFO] GitHub CLI already installed"
     fi
 
-    # ---------- Setup PS1 ----------
-    cat >/etc/profile.d/custom-prompt.sh <<'EOF'
-    #!/bin/bash
-    export PS1='\[\033[01;32m\]\h\[\033[00m\]:\[\033[01;34m\]\W\[\033[00m\]\$ '
-    EOF
-
     # ---------- Install docker ----------
     if [ ! -e /var/lib/docker ]; then
       mkdir -p /mnt/persist/docker

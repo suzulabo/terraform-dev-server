@@ -60,3 +60,9 @@ ssh -N -L 3000:localhost:3000 -R 8888:localhost:8888 dev-vscode
 ## Portainer
 
 https://docs.portainer.io/start/install-ce/server/docker/linux
+
+## PS1
+
+```
+export PS1='\[\033[01;32m\]\h\[\033[00m\]:\[\033[01;34m\]\W\[\033[00m\]\$ '
+```
