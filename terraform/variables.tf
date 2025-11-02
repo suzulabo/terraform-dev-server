@@ -30,7 +30,7 @@ variable "machine_type" {
 variable "boot_disk_size_gb" {
   description = "Size of the boot disk in GB."
   type        = number
-  default     = 10
+  default     = 20
 }
 
 variable "boot_image" {
