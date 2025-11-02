@@ -54,7 +54,7 @@ vscode に貼り付けると`~/.ssh/config`に追加される
 ## Port forwarding
 
 ```
-ssh -N -L 3000:localhost:3000 -R 8888:localhost:8888 dev-vscode
+ssh -N -L 3000:localhost:3000 -L 8888:localhost:8888 -L 9443:localhost:9443 dev-vscode
 ```
 
 ## Portainer
@@ -66,3 +66,7 @@ https://docs.portainer.io/start/install-ce/server/docker/linux
 ```
 export PS1='\[\033[01;32m\]\h\[\033[00m\]:\[\033[01;34m\]\W\[\033[00m\]\$ '
 ```
+
+## Manage Docker as a non-root user
+
+https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
