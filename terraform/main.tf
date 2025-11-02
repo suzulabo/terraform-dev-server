@@ -139,9 +139,10 @@ resource "google_compute_instance" "dev_server" {
     fi
 
     # ---------- Install docker ----------
-    if [ ! -e /var/lib/docker ]; then
-      mkdir -p /mnt/persist/docker
-      ln -s /mnt/persist/docker /var/lib
+    if [ ! -e /var/lib/docker/volumes ]; then
+      mkdir -p /mnt/persist/docker/volumes
+      mkdir -p /var/lib/docker
+      ln -s /mnt/persist/docker/volumes /var/lib/docker
     fi
     curl -fsSL https://get.docker.com -o get-docker.sh
     sh get-docker.sh
