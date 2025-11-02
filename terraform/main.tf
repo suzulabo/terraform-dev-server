@@ -144,7 +144,16 @@ resource "google_compute_instance" "dev_server" {
     export PS1='\[\033[01;32m\]\h\[\033[00m\]:\[\033[01;34m\]\W\[\033[00m\]\$ '
     EOF
 
+    # ---------- Install docker ----------
+    if [ ! -e /var/lib/docker ]; then
+      mkdir -p /mnt/persist/docker/volumes
+      mkdir -p /var/lib/docker
+      ln -s /mnt/persist/docker/volumes /var/lib/docker
+    fi
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sh get-docker.sh
 
+    # --------------------
     echo "[SUCCESS] Startup script completed"
   EOT
 
