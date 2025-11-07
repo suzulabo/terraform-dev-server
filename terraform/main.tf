@@ -42,6 +42,11 @@ resource "google_compute_instance" "dev_server" {
     google_compute_disk.persist_disk,
   ]
 
+  service_account {
+    email  = "default"
+    scopes = ["https://www.googleapis.com/auth/cloud-platform"]
+  }
+
   tags = ["dev-server"]
 
   boot_disk {
@@ -136,6 +141,16 @@ resource "google_compute_instance" "dev_server" {
         && apt-get install gh -y
     else
       echo "[INFO] GitHub CLI already installed"
+    fi
+
+    # ---------- Install Google Cloud Ops Agent ----------
+    if ! dpkg -s google-cloud-ops-agent >/dev/null 2>&1; then
+      echo "[INFO] Installing Google Cloud Ops Agent"
+      curl -sSO https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh
+      bash add-google-cloud-ops-agent-repo.sh --also-install
+      rm -f add-google-cloud-ops-agent-repo.sh
+    else
+      echo "[INFO] Google Cloud Ops Agent already installed"
     fi
 
     # ---------- Install docker ----------
