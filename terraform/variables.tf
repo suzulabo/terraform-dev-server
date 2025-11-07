@@ -36,7 +36,7 @@ variable "boot_disk_size_gb" {
 variable "boot_image" {
   description = "Source image used to initialize the boot disk."
   type        = string
-  default     = "projects/ubuntu-os-cloud/global/images/family/ubuntu-2204-lts-arm64"
+  default     = "projects/ubuntu-os-cloud/global/images/family/ubuntu-2404-lts-arm64"
 }
 
 variable "allowed_ports" {
