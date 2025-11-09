@@ -15,6 +15,10 @@ provider "google" {
   zone    = var.zone
 }
 
+locals {
+  is_spot_instance = upper(var.provisioning_model) == "SPOT"
+}
+
 resource "google_project_service" "compute" {
   project = var.project_id
   service = "compute.googleapis.com"
@@ -167,13 +171,17 @@ resource "google_compute_instance" "dev_server" {
   EOT
 
   scheduling {
-    provisioning_model  = "SPOT"
-    preemptible         = true
-    automatic_restart   = false
-    on_host_maintenance = "TERMINATE"
-    instance_termination_action = "STOP"
-    max_run_duration {
-      seconds = 28800  # 8hours
+    provisioning_model        = var.provisioning_model
+    preemptible               = local.is_spot_instance
+    automatic_restart         = local.is_spot_instance ? false : true
+    on_host_maintenance       = local.is_spot_instance ? "TERMINATE" : "MIGRATE"
+    instance_termination_action = local.is_spot_instance ? "STOP" : null
+
+    dynamic "max_run_duration" {
+      for_each = local.is_spot_instance ? [1] : []
+      content {
+        seconds = 28800  # 8hours
+      }
     }
   }
 

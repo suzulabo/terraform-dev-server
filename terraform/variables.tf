@@ -62,3 +62,9 @@ variable "persist_disk_size_gb" {
   type        = number
   default     = 10
 }
+
+variable "provisioning_model" {
+  description = "Provisioning model for the VM scheduling policy (e.g., SPOT or STANDARD)."
+  type        = string
+  default     = "SPOT"
+}
