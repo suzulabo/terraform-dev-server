@@ -180,7 +180,7 @@ resource "google_compute_instance" "dev_server" {
     dynamic "max_run_duration" {
       for_each = local.is_spot_instance ? [1] : []
       content {
-        seconds = 28800  # 8hours
+        seconds = 43200  # 12hours
       }
     }
   }
