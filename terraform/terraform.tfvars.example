@@ -1,1 +1,2 @@
-project_id = "suzulabo-playground"
+project_id  = "suzulabo-playground"
+owner_email = "owner@example.com"

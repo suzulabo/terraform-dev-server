@@ -26,6 +26,13 @@ resource "google_project_service" "compute" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "monitoring" {
+  project = var.project_id
+  service = "monitoring.googleapis.com"
+
+  disable_on_destroy = false
+}
+
 resource "google_compute_disk" "persist_disk" {
   name = "${var.persist_disk_name}"
   type = "hyperdisk-balanced"
@@ -207,6 +214,57 @@ resource "google_compute_firewall" "dev_server_ports" {
 
   source_ranges = var.allowed_source_ranges
   target_tags   = ["dev-server"]
+}
+
+resource "google_monitoring_notification_channel" "owner_email" {
+  display_name = "Dev server hourly status"
+  type         = "email"
+
+  labels = {
+    email_address = var.owner_email
+  }
+
+  depends_on = [
+    google_project_service.monitoring,
+  ]
+}
+
+resource "google_monitoring_alert_policy" "dev_server_hourly_status" {
+  display_name = "Dev server running hourly notification"
+  combiner     = "OR"
+
+  conditions {
+    display_name = "Instance is running"
+
+    condition_monitoring_query_language {
+      query = <<-EOT
+        fetch gce_instance
+        | metric 'compute.googleapis.com/instance/uptime'
+        | filter (resource.project_id == '${var.project_id}')
+        | filter (resource.instance_id == '${google_compute_instance.dev_server.instance_id}')
+        | group_by [], [value_uptime_mean: mean(value.uptime)]
+        | window 1h
+        | condition value_uptime_mean > 0
+      EOT
+
+      duration = "0s"
+
+      trigger {
+        count = 1
+      }
+    }
+  }
+
+  alert_strategy {
+    auto_close = "3600s"
+  }
+
+  notification_channels = [google_monitoring_notification_channel.owner_email.name]
+  enabled               = true
+
+  depends_on = [
+    google_project_service.monitoring,
+  ]
 }
 
 output "instance_external_ip" {

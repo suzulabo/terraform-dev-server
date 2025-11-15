@@ -68,3 +68,8 @@ variable "provisioning_model" {
   type        = string
   default     = "SPOT"
 }
+
+variable "owner_email" {
+  description = "Email address that should receive hourly uptime notifications."
+  type        = string
+}
