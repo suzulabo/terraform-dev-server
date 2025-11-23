@@ -72,6 +72,8 @@ resource "google_compute_instance" "dev_server" {
 
   metadata = {
     enable-oslogin = "TRUE"
+    sendmail-api-endpoint = var.sendmail_api_endpoint
+    sendmail-api-key      = var.sendmail_api_key
   }
 
   metadata_startup_script = <<-EOT
@@ -165,6 +167,22 @@ resource "google_compute_instance" "dev_server" {
     fi
     curl -fsSL https://get.docker.com -o get-docker.sh
     sh get-docker.sh
+
+    # ---------- Setup Heartbeat Cron ----------
+    SENDMAIL_ENDPOINT=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/sendmail-api-endpoint)
+    SENDMAIL_KEY=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/sendmail-api-key)
+
+    cat <<EOF > /usr/local/bin/send_heartbeat.sh
+#!/bin/bash
+curl -X POST "$SENDMAIL_ENDPOINT" \\
+  -H "Authorization: Bearer $SENDMAIL_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{"subject":"dev-vscode is running","body":""}'
+EOF
+    chmod +x /usr/local/bin/send_heartbeat.sh
+
+    # Run every hour
+    echo "0 * * * * root /usr/local/bin/send_heartbeat.sh" > /etc/cron.d/heartbeat
 
     # --------------------
     echo "[SUCCESS] Startup script completed"
