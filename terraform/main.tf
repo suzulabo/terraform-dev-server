@@ -174,10 +174,11 @@ resource "google_compute_instance" "dev_server" {
 
     cat <<EOF > /usr/local/bin/send_heartbeat.sh
 #!/bin/bash
+UPTIME=\$(uptime -p)
 curl -X POST "$SENDMAIL_ENDPOINT" \\
   -H "Authorization: Bearer $SENDMAIL_KEY" \\
   -H "Content-Type: application/json" \\
-  -d '{"subject":"dev-vscode is running","body":""}'
+  -d "{\"subject\":\"dev-vscode is running\",\"body\":\"\$UPTIME\"}"
 EOF
     chmod +x /usr/local/bin/send_heartbeat.sh
 
