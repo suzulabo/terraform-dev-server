@@ -60,7 +60,7 @@ variable "persist_disk_name" {
 variable "persist_disk_size_gb" {
   description = "Size of the persistent Hyperdisk Balanced volume."
   type        = number
-  default     = 10
+  default     = 20
 }
 
 variable "provisioning_model" {
