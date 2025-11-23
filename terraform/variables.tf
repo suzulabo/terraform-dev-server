@@ -68,3 +68,14 @@ variable "provisioning_model" {
   type        = string
   default     = "SPOT"
 }
+
+variable "sendmail_api_endpoint" {
+  description = "API endpoint to send heartbeat to."
+  type        = string
+}
+
+variable "sendmail_api_key" {
+  description = "API key for the heartbeat endpoint."
+  type        = string
+  sensitive   = true
+}
